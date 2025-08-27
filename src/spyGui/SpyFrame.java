@@ -17,10 +17,13 @@ public class SpyFrame extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    private CmdInputDlg launchDlg = new CmdInputDlg();
-    private SpyGuiPane displayPane = new SpyGuiPane();
-    public static RecordingPane recordingPane = new RecordingPane();
-    private JMenuBar menuBar = new JMenuBar();
+    private final CmdInputDlg launchDlg = new CmdInputDlg();
+    private final SpyGuiPane displayPane = new SpyGuiPane();
+    public static final RecordingPane recordingPane = new RecordingPane();
+    private final JMenuBar menuBar = new JMenuBar();
+    private final JMenuItem reindexItem = new JMenuItem("Reindex");
+    private final JMenuItem recordItem = new JMenuItem("Record");
+    private final JMenuItem stopItem = new JMenuItem("Stop");
 
     public SpyFrame() {
         super("JSpy");
@@ -30,34 +33,11 @@ public class SpyFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setJMenuBar(menuBar);
 
-        JToolBar toolBar = new JToolBar();
-        JButton reindexBtn = new JButton("Reindex");
-        JButton startBtn = new JButton("Record");
-        JButton stopBtn = new JButton("Stop");
-        stopBtn.setEnabled(false);
-        toolBar.add(reindexBtn);
-        toolBar.add(startBtn);
-        toolBar.add(stopBtn);
-
-        reindexBtn.addActionListener(e -> SpyClientReader.sendCommand("REINDEX"));
-        startBtn.addActionListener(e -> {
-            SpyClientReader.sendCommand("START_REC");
-            recordingPane.clear();
-            startBtn.setEnabled(false);
-            stopBtn.setEnabled(true);
-        });
-        stopBtn.addActionListener(e -> {
-            SpyClientReader.sendCommand("STOP_REC");
-            startBtn.setEnabled(true);
-            stopBtn.setEnabled(false);
-        });
-
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Inspector", displayPane);
         tabs.addTab("Recording", recordingPane);
 
         JPanel root = new JPanel(new BorderLayout());
-        root.add(toolBar, BorderLayout.NORTH);
         root.add(tabs, BorderLayout.CENTER);
 
         setContentPane(root);
@@ -83,6 +63,28 @@ public class SpyFrame extends JFrame {
         about.setMnemonic(KeyEvent.VK_A);
         JMenuItem shortcuts = new JMenuItem("Shortcuts");
         shortcuts.setMnemonic(KeyEvent.VK_S);
+
+        JMenu actionMenu = new JMenu("Action");
+        actionMenu.setMnemonic(KeyEvent.VK_A);
+
+        actionMenu.add(reindexItem);
+        actionMenu.add(recordItem);
+        actionMenu.add(stopItem);
+
+        stopItem.setEnabled(false);
+
+        reindexItem.addActionListener(e -> SpyClientReader.sendCommand("REINDEX"));
+        recordItem.addActionListener(e -> {
+            SpyClientReader.sendCommand("START_REC");
+            recordingPane.clear();
+            recordItem.setEnabled(false);
+            stopItem.setEnabled(true);
+        });
+        stopItem.addActionListener(e -> {
+            SpyClientReader.sendCommand("STOP_REC");
+            recordItem.setEnabled(true);
+            stopItem.setEnabled(false);
+        });
 
         fileMenu.add(launch);
         fileMenu.add(quit);
@@ -115,6 +117,7 @@ public class SpyFrame extends JFrame {
         shortcuts.addActionListener(menuAct);
 
         menuBar.add(fileMenu);
+        menuBar.add(actionMenu);
         menuBar.add(helpMenu);
     }
 

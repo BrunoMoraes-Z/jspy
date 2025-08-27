@@ -38,7 +38,7 @@ public class SpyClientReader implements Runnable {
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8));
             out.write("connected\n");
             out.flush();
-            SpyGuiPane.topTextPane.setText("Select window and use the toolbar to control indexing and recording");
+            SpyGuiPane.topTextPane.setText("Select window and use the Action menu to control indexing and recording");
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
             String tempText;
 

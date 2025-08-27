@@ -26,11 +26,11 @@ public class RecordingPane extends JPanel {
     }
 
     public void addRecord(String event, String locator) {
-        model.addElement(event + " - " + locator);
+        SwingUtilities.invokeLater(() -> model.addElement(event + " - " + locator));
     }
 
     public void clear() {
-        model.clear();
+        SwingUtilities.invokeLater(model::clear);
     }
 
     private void saveToFile(ActionEvent e) {
