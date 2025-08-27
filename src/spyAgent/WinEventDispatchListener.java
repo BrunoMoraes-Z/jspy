@@ -33,6 +33,7 @@ public class WinEventDispatchListener implements AWTEventListener {
 
     private void setupWindow(Window win) {
         Thread enuTh = new Thread(new CompEnum(win));
+        enuTh.setPriority(Thread.MAX_PRIORITY);
         enuTh.start();
         winTrack.activeWindow = win;
         win.addWindowFocusListener(winTrack);
