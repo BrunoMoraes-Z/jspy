@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,15 +44,7 @@ public class StepRecorder {
     }
 
     public static synchronized void stop() {
-        if (!recording) {
-            return;
-        }
         recording = false;
-        try {
-            saveToFile(Paths.get("step-records.txt"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public static synchronized void recordAction(String event, String componentName) {
@@ -61,6 +52,7 @@ public class StepRecorder {
             return;
         }
         actions.add(new ActionRecord(event, componentName));
+        Communicator.writeToServer("REC," + event + "," + componentName);
     }
 
     public static void saveToFile(Path out) throws IOException {
@@ -91,4 +83,3 @@ public class StepRecorder {
         return classType + "[" + index + "]";
     }
 }
-

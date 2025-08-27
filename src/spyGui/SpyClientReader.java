@@ -11,25 +11,87 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.net.Socket;
 
 public class SpyClientReader implements Runnable {
     public Socket client;
+    private static BufferedWriter out;
 
     public SpyClientReader(Socket sock) {
         client = sock;
     }
 
+    public static void sendCommand(String cmd) {
+        try {
+            if (out != null) {
+                out.write(cmd + "\n");
+                out.flush();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void run() {
         try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8));
             out.write("connected\n");
-            SpyGuiPane.topTextPane.setText("Select Window and press \"CTRL+ALT+R\" to Re-Index");
             out.flush();
-            BufferedReader in;
-            InputStreamReader inStream = new InputStreamReader(client.getInputStream());
-            in = new BufferedReader(inStream);
+            SpyGuiPane.topTextPane.setText("Select window and use the toolbar to control indexing and recording");
+            BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
             String tempText;
+
+            while ((tempText = in.readLine()) != null) {
+                out.write("ack\n");
+                out.flush();
+                if (tempText.startsWith("REC,")) {
+                    String[] parts = tempText.split(",", 3);
+                    if (parts.length >= 3) {
+                        SpyFrame.recordingPane.addRecord(parts[1], parts[2]);
+                    }
+                    continue;
+                }
+                SpyGuiPane.printText("Clear");
+                System.out.println("From Client: " + tempText);
+                String splitText[] = tempText.split(",");
+                for (int i = 0; i < splitText.length; i++) {
+                    if (!(splitText[i].equals(""))) {
+                        if (i == 4) {
+                            int index = splitText[4].indexOf("[");
+                            String className = splitText[4].substring(0, index + 1).replace("[", "");
+                            String name = splitText[4].substring(index + 1, splitText[4].length());
+                            SpyGuiPane.printText("Name- " + name);
+                            SpyGuiPane.printText("Class Name- " + className);
+                        } else if (i == 5) {
+                            SpyGuiPane.printText("X: " + splitText[5]);
+                        } else if (i == 6) {
+                            SpyGuiPane.printText("Y: " + splitText[6]);
+                        } else if (i == 7) {
+                            SpyGuiPane.printText("Size: " + splitText[7]);
+                        } else {
+                            String temporary = splitText[i].replace("[", "\n");
+                            String temp[] = temporary.split("\n");
+                            for (int j = 0; j < temp.length; j++) {
+                                // skip empty properties
+                                // empty properties end with "="
+                                String tempLastCharacter = temp[j].substring(temp[j].length() - 1, temp[j].length());
+                                if ((!tempLastCharacter.equals("="))) {
+                                    if (tempLastCharacter.equals("]")) {
+                                        String tempBeforeLastCharacter = temp[j].substring(temp[j].length() - 2, temp[j].length() - 1);
+                                        if ((!tempBeforeLastCharacter.equals("="))) {
+                                            SpyGuiPane.printText(temp[j].substring(0, temp[j].length() - 1));
+                                            SpyGuiPane.printText("new line");
+                                        }
+                                    } else {
+                                        SpyGuiPane.printText(temp[j]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             while (true) {
                 while ((tempText = in.readLine()) != null) {

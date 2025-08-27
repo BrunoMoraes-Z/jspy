@@ -7,6 +7,7 @@
 package spyGui;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -18,6 +19,7 @@ public class SpyFrame extends JFrame {
 
     private CmdInputDlg launchDlg = new CmdInputDlg();
     private SpyGuiPane displayPane = new SpyGuiPane();
+    public static RecordingPane recordingPane = new RecordingPane();
     private JMenuBar menuBar = new JMenuBar();
 
     public SpyFrame() {
@@ -28,7 +30,37 @@ public class SpyFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setJMenuBar(menuBar);
 
-        setContentPane(displayPane);
+        JToolBar toolBar = new JToolBar();
+        JButton reindexBtn = new JButton("Reindex");
+        JButton startBtn = new JButton("Record");
+        JButton stopBtn = new JButton("Stop");
+        stopBtn.setEnabled(false);
+        toolBar.add(reindexBtn);
+        toolBar.add(startBtn);
+        toolBar.add(stopBtn);
+
+        reindexBtn.addActionListener(e -> SpyClientReader.sendCommand("REINDEX"));
+        startBtn.addActionListener(e -> {
+            SpyClientReader.sendCommand("START_REC");
+            recordingPane.clear();
+            startBtn.setEnabled(false);
+            stopBtn.setEnabled(true);
+        });
+        stopBtn.addActionListener(e -> {
+            SpyClientReader.sendCommand("STOP_REC");
+            startBtn.setEnabled(true);
+            stopBtn.setEnabled(false);
+        });
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Inspector", displayPane);
+        tabs.addTab("Recording", recordingPane);
+
+        JPanel root = new JPanel(new BorderLayout());
+        root.add(toolBar, BorderLayout.NORTH);
+        root.add(tabs, BorderLayout.CENTER);
+
+        setContentPane(root);
 
         JFrame.setDefaultLookAndFeelDecorated(true);
 
