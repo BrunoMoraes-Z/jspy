@@ -19,6 +19,7 @@ jobs:
         run: |
           find src -name "*.java" > sources.txt
           javac -d out @sources.txt
+          rsync -a --include '*/' --include '*.png' --exclude '*' src/ out/
           jar cfm jspy.jar MANIFEST.MF -C out .
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
