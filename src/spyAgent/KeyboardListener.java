@@ -21,21 +21,25 @@ public class KeyboardListener implements KeyEventDispatcher {
     }
 
     public boolean dispatchKeyEvent(KeyEvent arg0) {
+        Component srcComp = arg0.getComponent();
         if (arg0.getID() == KeyEvent.KEY_PRESSED) {
-            if (arg0.getKeyCode() == KeyEvent.VK_ALT) {
+            int code = arg0.getKeyCode();
+            if (code == KeyEvent.VK_ALT) {
                 altPressed = true;
-            } else if (arg0.getKeyCode() == KeyEvent.VK_CONTROL) {
+            } else if (code == KeyEvent.VK_CONTROL) {
                 ctrlPressed = true;
-            } else if (ctrlPressed && altPressed && arg0.getKeyCode() == KeyEvent.VK_C) {
+            } else if (ctrlPressed && altPressed && code == KeyEvent.VK_C) {
                 Utilities.copyStringToClipboard(highlightedComponentName);
-            } else if (ctrlPressed && altPressed && arg0.getKeyCode() == KeyEvent.VK_S) {
+            } else if (ctrlPressed && altPressed && code == KeyEvent.VK_S) {
                 CompMouseListner.setActive = !CompMouseListner.setActive;
-            } else if (ctrlPressed && altPressed && arg0.getKeyCode() == KeyEvent.VK_P) {
+            } else if (ctrlPressed && altPressed && code == KeyEvent.VK_P) {
                 if (StepRecorder.isRecording()) {
                     StepRecorder.stop();
                 } else {
                     StepRecorder.start();
                 }
+            } else if (code == KeyEvent.VK_ENTER || code == KeyEvent.VK_TAB || code == KeyEvent.VK_ESCAPE) {
+                StepRecorder.recordAction("press key", StepRecorder.getLocator(srcComp) + " - " + KeyEvent.getKeyText(code));
             }
 
         } else if (arg0.getID() == KeyEvent.KEY_RELEASED) {
@@ -43,6 +47,11 @@ public class KeyboardListener implements KeyEventDispatcher {
                 altPressed = false;
             } else if (arg0.getKeyCode() == KeyEvent.VK_CONTROL) {
                 ctrlPressed = false;
+            }
+        } else if (arg0.getID() == KeyEvent.KEY_TYPED) {
+            char ch = arg0.getKeyChar();
+            if (!Character.isISOControl(ch)) {
+                StepRecorder.recordAction("press key", StepRecorder.getLocator(srcComp) + " - " + ch);
             }
         }
         return false;

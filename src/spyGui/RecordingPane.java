@@ -26,11 +26,30 @@ public class RecordingPane extends JPanel {
     }
 
     public void addRecord(String event, String locator) {
-        model.addElement(event + " - " + locator);
+        SwingUtilities.invokeLater(() -> {
+            String locStr = locator;
+            if ("press key".equals(event)) {
+                int sep = locStr.lastIndexOf(" - ");
+                if (sep > 0) {
+                    String loc = locStr.substring(0, sep);
+                    String key = locStr.substring(sep + 3);
+                    if (key.length() == 1 && !Character.isISOControl(key.charAt(0))) {
+                        int last = model.getSize() - 1;
+                        String prefix = event + " - " + loc + " - ";
+                        if (last >= 0 && model.get(last).startsWith(prefix)) {
+                            model.set(last, model.get(last) + key);
+                            return;
+                        }
+                    }
+                    locStr = loc + " - " + key;
+                }
+            }
+            model.addElement(event + " - " + locStr);
+        });
     }
 
     public void clear() {
-        model.clear();
+        SwingUtilities.invokeLater(model::clear);
     }
 
     private void saveToFile(ActionEvent e) {
