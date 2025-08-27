@@ -52,6 +52,21 @@ public class SpyClientReader implements Runnable {
                     }
                     continue;
                 }
+                if (tempText.equals("TREE_BEGIN")) {
+                    SpyFrame.treePane.clear();
+                    continue;
+                }
+                if (tempText.startsWith("TREE,")) {
+                    String[] parts = tempText.split(",", 3);
+                    if (parts.length >= 3) {
+                        int level = Integer.parseInt(parts[1]);
+                        SpyFrame.treePane.addNode(level, parts[2]);
+                    }
+                    continue;
+                }
+                if (tempText.equals("TREE_END")) {
+                    continue;
+                }
                 SpyGuiPane.printText("Clear");
                 System.out.println("From Client: " + tempText);
                 String splitText[] = tempText.split(",");

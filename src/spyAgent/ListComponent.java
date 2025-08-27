@@ -62,6 +62,7 @@ public class ListComponent {
         public void operateOnComponent(Component component, int level) {
             componentName = componentToString(component);
             componentClass = myHieMap.getInstance(component);
+            String locator = StepRecorder.getLocator(component);
             CompMouseListner mouseListner = new CompMouseListner(myHieMap.index, level, myHieMap.winTitle, componentClass, myHieMap.props);
 
             for (MouseListener ml : component.getMouseListeners()) {
@@ -70,6 +71,8 @@ public class ListComponent {
                 }
             }
             component.addMouseListener(mouseListner);
+            ComponentLocatorStore.put(locator, component);
+            Communicator.writeToServer("TREE," + level + "," + locator);
         }
     }
 

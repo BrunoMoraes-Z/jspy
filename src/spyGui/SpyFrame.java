@@ -20,6 +20,7 @@ public class SpyFrame extends JFrame {
     private final CmdInputDlg launchDlg = new CmdInputDlg();
     private final SpyGuiPane displayPane = new SpyGuiPane();
     public static final RecordingPane recordingPane = new RecordingPane();
+    public static final ComponentTreePane treePane = new ComponentTreePane();
     private final JMenuBar menuBar = new JMenuBar();
     private final JMenuItem reindexItem = new JMenuItem("Reindex");
     private final JMenuItem recordItem = new JMenuItem("Record");
@@ -36,6 +37,7 @@ public class SpyFrame extends JFrame {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Inspector", displayPane);
         tabs.addTab("Recording", recordingPane);
+        tabs.addTab("Elements", treePane);
 
         JPanel root = new JPanel(new BorderLayout());
         root.add(tabs, BorderLayout.CENTER);
