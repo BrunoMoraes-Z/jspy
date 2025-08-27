@@ -50,6 +50,9 @@ public class Communicator {
                     StepRecorder.start();
                 } else if ("STOP_REC".equalsIgnoreCase(line)) {
                     StepRecorder.stop();
+                } else if (line.startsWith("HIGHLIGHT,")) {
+                    String loc = line.substring("HIGHLIGHT,".length());
+                    ComponentLocatorStore.highlight(loc);
                 }
             }
         } catch (IOException e) {

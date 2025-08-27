@@ -37,8 +37,11 @@ public class CompEnum implements Runnable {
     public void run() {
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         Communicator.writeToServer("Started Indexing Components");
+        ComponentLocatorStore.clear();
+        Communicator.writeToServer("TREE_BEGIN");
         ListComponent compList = new ListComponent(hieMap);
         compList.listComponentsInContext(component);
+        Communicator.writeToServer("TREE_END");
         Communicator.writeToServer("Finished Indexing Components");
 
     }
