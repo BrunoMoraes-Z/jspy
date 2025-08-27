@@ -35,7 +35,7 @@ public class SpyClientReader implements Runnable {
 
     public void run() {
         try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8));
+            out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8));
             out.write("connected\n");
             out.flush();
             SpyGuiPane.topTextPane.setText("Select window and use the Action menu to control indexing and recording");
@@ -142,6 +142,14 @@ public class SpyClientReader implements Runnable {
         } catch (Exception e) {
             System.out.println("ERROR3: " + e.getMessage());
             SpyGuiPane.printText("Client Disconnected.");
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (Exception ignore) {
+            }
+            out = null;
         }
 
     }
