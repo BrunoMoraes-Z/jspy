@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2015 Nokia Solutions and Networks
  * Licensed under the Apache License, Version 2.0,
@@ -36,6 +37,12 @@ public class KeyboardListener implements KeyEventDispatcher {
                 Utilities.copyStringToClipboard(highlightedComponentName);
             } else if (ctrlPressed && altPressed && arg0.getKeyCode() == KeyEvent.VK_S) {
                 CompMouseListner.setActive = !CompMouseListner.setActive;
+            } else if (ctrlPressed && altPressed && arg0.getKeyCode() == KeyEvent.VK_P) {
+                if (StepRecorder.isRecording()) {
+                    StepRecorder.stop();
+                } else {
+                    StepRecorder.start();
+                }
             }
 
         } else if (arg0.getID() == KeyEvent.KEY_RELEASED) {

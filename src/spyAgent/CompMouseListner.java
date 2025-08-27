@@ -39,6 +39,7 @@ public class CompMouseListner implements MouseListener {
         }
 
         Component comp = arg0.getComponent();
+        StepRecorder.recordAction("click", StepRecorder.getLocator(comp));
         if (comp instanceof JTabbedPane) {
             JTabbedPane tabpane = (JTabbedPane) comp;
             int tabIndex = tabpane.getSelectedIndex();
