@@ -15,6 +15,7 @@ public class AgentPreMain {
 
         Communicator.startCommunicator(Integer.parseInt(agentArguments));
         WinEventDispatchListener winDispatcher = new WinEventDispatchListener();
+        Communicator.setWindowTracker(winDispatcher.getWindowTracker());
 
         Toolkit tk = Toolkit.getDefaultToolkit();
         tk.addAWTEventListener(winDispatcher, AWTEvent.WINDOW_EVENT_MASK);

@@ -35,4 +35,8 @@ public class WinEventDispatchListener implements AWTEventListener {
         }
     }
 
+    public WindowTracker getWindowTracker() {
+        return winTrack;
+    }
+
 }

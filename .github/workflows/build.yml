@@ -1,0 +1,33 @@
+name: Build and Release
+
+on:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '11'
+      - name: Compile project
+        run: |
+          find src -name "*.java" > sources.txt
+          javac -d out @sources.txt
+          rsync -a --include '*/' --include '*.png' --exclude '*' src/ out/
+          jar cfm jspy.jar src/META-INF/MANIFEST.MF -C out .
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jspy
+          path: jspy.jar
+      - name: Upload release asset
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: jspy.jar
