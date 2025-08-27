@@ -8,6 +8,7 @@ package spyAgent;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 import javax.swing.JInternalFrame;
@@ -63,6 +64,11 @@ public class ListComponent {
             componentClass = myHieMap.getInstance(component);
             CompMouseListner mouseListner = new CompMouseListner(myHieMap.index, level, myHieMap.winTitle, componentClass, myHieMap.props);
 
+            for (MouseListener ml : component.getMouseListeners()) {
+                if (ml instanceof CompMouseListner) {
+                    component.removeMouseListener(ml);
+                }
+            }
             component.addMouseListener(mouseListner);
         }
     }
