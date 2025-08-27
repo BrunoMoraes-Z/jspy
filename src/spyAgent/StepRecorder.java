@@ -39,12 +39,15 @@ public class StepRecorder {
         }
     }
 
-    public static void start() {
+    public static synchronized void start() {
         actions.clear();
         recording = true;
     }
 
-    public static void stop() {
+    public static synchronized void stop() {
+        if (!recording) {
+            return;
+        }
         recording = false;
         try {
             saveToFile(Paths.get("step-records.txt"));
@@ -53,8 +56,8 @@ public class StepRecorder {
         }
     }
 
-    public static void recordAction(String event, String componentName) {
-        if (!recording) {
+    public static synchronized void recordAction(String event, String componentName) {
+        if (!recording || event == null || componentName == null) {
             return;
         }
         actions.add(new ActionRecord(event, componentName));
@@ -81,6 +84,9 @@ public class StepRecorder {
             return name;
         }
         String classType = hierarchyMap.getInstance(c);
+        if (classType == null) {
+            return "";
+        }
         String index = hierarchyMap.index;
         return classType + "[" + index + "]";
     }
