@@ -94,7 +94,7 @@ public class CmdInputDlg extends JDialog {
                 e.printStackTrace();
             }
             String jSpyJarPath = new File(jSpyJarUri).getPath();
-            String agentOpts = "-javaagent:\"" + jSpyJarPath + "\"" + "=" + Integer.toString(SpyServer.serverPort);
+            String agentOpts = "-javaagent:" + jSpyJarPath + "=" + Integer.toString(SpyServer.serverPort);
             arguments.add(1, "-J-Djnlpx.jvmargs=" + agentOpts);
 
             ProcessBuilder pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
