@@ -96,13 +96,15 @@ public class CmdInputDlg extends JDialog {
             String jSpyJarPath = new File(jSpyJarUri).getPath();
             String agentOpts = "-javaagent:" + jSpyJarPath + "=" + Integer.toString(SpyServer.serverPort);
             arguments.add(1, "-J-Djnlpx.jvmargs=" + agentOpts);
+            arguments.add(1, "-J-Djnlpx.vmargs=" + agentOpts);
 
             ProcessBuilder pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
             Map<String, String> env = pb.environment();
-            env.put("JAVA_TOOL_OPTIONS", agentOpts);
-            env.put("JAVAWS_VM_ARGS", agentOpts);
-            env.put("JPI_VM_ARGS", agentOpts);
-            env.put("JPI_PLUGIN2_VMARGS", agentOpts);
+            addEnv(env, "JAVA_TOOL_OPTIONS", agentOpts);
+            String prefixedAgent = "-J" + agentOpts;
+            addEnv(env, "JAVAWS_VM_ARGS", prefixedAgent);
+            addEnv(env, "JPI_VM_ARGS", prefixedAgent);
+            addEnv(env, "JPI_PLUGIN2_VMARGS", prefixedAgent);
 
             pb.redirectErrorStream(true);
             try {
@@ -140,6 +142,15 @@ public class CmdInputDlg extends JDialog {
             args.add(current.toString());
         }
         return args;
+    }
+
+    private static void addEnv(Map<String, String> env, String key, String value) {
+        String existing = env.get(key);
+        if (existing != null && !existing.trim().isEmpty()) {
+            env.put(key, existing + " " + value);
+        } else {
+            env.put(key, value);
+        }
     }
 
 }
