@@ -101,10 +101,9 @@ public class CmdInputDlg extends JDialog {
             ProcessBuilder pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
             Map<String, String> env = pb.environment();
             addEnv(env, "JAVA_TOOL_OPTIONS", agentOpts);
-            String prefixedAgent = "-J" + agentOpts;
-            addEnv(env, "JAVAWS_VM_ARGS", prefixedAgent);
-            addEnv(env, "JPI_VM_ARGS", prefixedAgent);
-            addEnv(env, "JPI_PLUGIN2_VMARGS", prefixedAgent);
+            addEnv(env, "JAVAWS_VM_ARGS", agentOpts);
+            addEnv(env, "JPI_VM_ARGS", agentOpts);
+            addEnv(env, "JPI_PLUGIN2_VMARGS", agentOpts);
 
             pb.redirectErrorStream(true);
             try {
