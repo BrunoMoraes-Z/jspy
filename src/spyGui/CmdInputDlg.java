@@ -27,6 +27,7 @@ public class CmdInputDlg extends JDialog {
     private CommandComboBox commandCombo = new CommandComboBox();
     private JButton btLaunch = new JButton("Run");
     private JLabel label1 = new JLabel("Cmd to launch", JLabel.LEFT);
+    private JCheckBox injectJnlpCheck = new JCheckBox("Inject JNLP flags");
 
     public CmdInputDlg() {
         setName("execCmd");
@@ -42,6 +43,7 @@ public class CmdInputDlg extends JDialog {
         setupComboBox();
         contentPane.add(label1);
         contentPane.add(commandCombo);
+        contentPane.add(injectJnlpCheck);
         contentPane.add(btLaunch);
 
         setupListeners();
@@ -86,24 +88,44 @@ public class CmdInputDlg extends JDialog {
             System.out.println("Executing command :" + cmdStr);
             List<String> arguments = parseCommand(cmdStr);
 
-            URI jSpyJarUri = null;
-            try {
-                jSpyJarUri = spyAgent.AgentPreMain.class.getProtectionDomain()
-                        .getCodeSource().getLocation().toURI();
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
+            boolean isJar = false;
+            for (String arg : arguments) {
+                if (arg.endsWith(".jar")) {
+                    isJar = true;
+                    break;
+                }
             }
-            String jSpyJarPath = new File(jSpyJarUri).getPath();
-            String agentOpts = "-javaagent:" + jSpyJarPath + "=" + Integer.toString(SpyServer.serverPort);
-            arguments.add(1, "-J-Djnlpx.jvmargs=" + agentOpts);
-            arguments.add(1, "-J-Djnlpx.vmargs=" + agentOpts);
+            boolean inject = isJar || injectJnlpCheck.isSelected();
 
-            ProcessBuilder pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
-            Map<String, String> env = pb.environment();
-            addEnv(env, "JAVA_TOOL_OPTIONS", agentOpts);
-            addEnv(env, "JAVAWS_VM_ARGS", agentOpts);
-            addEnv(env, "JPI_VM_ARGS", agentOpts);
-            addEnv(env, "JPI_PLUGIN2_VMARGS", agentOpts);
+            ProcessBuilder pb;
+            if (inject) {
+                URI jSpyJarUri = null;
+                try {
+                    jSpyJarUri = spyAgent.AgentPreMain.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+                String jSpyJarPath = new File(jSpyJarUri).getPath();
+                String agentOpts = "-javaagent:" + jSpyJarPath + "=" + Integer.toString(SpyServer.serverPort);
+
+                if (injectJnlpCheck.isSelected()) {
+                    arguments.add(1, "-J-Djnlpx.jvmargs=" + agentOpts);
+                    arguments.add(1, "-J-Djnlpx.vmargs=" + agentOpts);
+                } else {
+                    arguments.add(1, agentOpts);
+                }
+
+                pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
+                Map<String, String> env = pb.environment();
+                addEnv(env, "JAVA_TOOL_OPTIONS", agentOpts);
+                if (injectJnlpCheck.isSelected()) {
+                    addEnv(env, "JAVAWS_VM_ARGS", agentOpts);
+                    addEnv(env, "JPI_VM_ARGS", agentOpts);
+                    addEnv(env, "JPI_PLUGIN2_VMARGS", agentOpts);
+                }
+            } else {
+                pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
+            }
 
             pb.redirectErrorStream(true);
             try {
