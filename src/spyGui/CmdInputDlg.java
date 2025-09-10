@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -85,8 +84,7 @@ public class CmdInputDlg extends JDialog {
         if (cmdStr != null && !cmdStr.trim().equals("")) {
 
             System.out.println("Executing command :" + cmdStr);
-            List<String> arguments = new ArrayList<String>();
-            arguments.addAll(Arrays.asList(cmdStr.trim().split("\\s+")));
+            List<String> arguments = parseCommand(cmdStr);
 
             URI jSpyJarUri = null;
             try {
@@ -119,6 +117,29 @@ public class CmdInputDlg extends JDialog {
             }
 
         }
+    }
+
+    private static List<String> parseCommand(String cmdStr) {
+        List<String> args = new ArrayList<String>();
+        boolean inQuotes = false;
+        StringBuilder current = new StringBuilder();
+        for (int i = 0; i < cmdStr.length(); i++) {
+            char c = cmdStr.charAt(i);
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (Character.isWhitespace(c) && !inQuotes) {
+                if (current.length() > 0) {
+                    args.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+        if (current.length() > 0) {
+            args.add(current.toString());
+        }
+        return args;
     }
 
 }
