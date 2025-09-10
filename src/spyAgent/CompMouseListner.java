@@ -7,13 +7,15 @@
 package spyAgent;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 
 public class CompMouseListner implements MouseListener {
-    public static Color highlightedComponentColor;
+    public static Border highlightedComponentBorder;
 
     String myIndex;
     int compHierarchy = -1;
@@ -73,9 +75,12 @@ public class CompMouseListner implements MouseListener {
                 String name = compProps.substring(index + 1, compProps.indexOf(','));
                 KeyboardListener.highlightedComponentName = name;
                 Component comp = arg0.getComponent();
-                Communicator.writeToServer("Window Title - " + winTitle + ",Index - " + myIndex + ",Instance Of - " + classType + ",Comp. Hierarchy - " + compHierarchy + "," + compProps);
-                highlightedComponentColor = comp.getBackground();
-                comp.setBackground(new Color(90, 100, 210));
+                Communicator.writeToServer("Window Title - " + winTitle + ",Index - " + myIndex + ",Instance Of - " + classType
+                        + ",Comp. Hierarchy - " + compHierarchy + "," + compProps);
+                if (comp instanceof JComponent) {
+                    highlightedComponentBorder = ((JComponent) comp).getBorder();
+                    ((JComponent) comp).setBorder(new LineBorder(Color.RED, 3));
+                }
                 flag = true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -87,7 +92,9 @@ public class CompMouseListner implements MouseListener {
         if (flag) {
             try {
                 Component comp = arg0.getComponent();
-                comp.setBackground(highlightedComponentColor);
+                if (comp instanceof JComponent) {
+                    ((JComponent) comp).setBorder(highlightedComponentBorder);
+                }
                 flag = false;
             } catch (Exception e) {
                 e.printStackTrace();
