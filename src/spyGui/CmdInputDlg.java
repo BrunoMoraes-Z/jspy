@@ -79,6 +79,11 @@ public class CmdInputDlg extends JDialog {
         commandCombo.setPreferredSize(new Dimension(200, 20));
     }
 
+    private boolean isJavaWebStart(String cmd) {
+        String name = new File(cmd).getName().toLowerCase();
+        return name.equals("javaws") || name.equals("javaws.exe");
+    }
+
     public void executeCmd() {
         String cmdStr = ((JTextComponent) (commandCombo.getEditor().getEditorComponent())).getText();
 
@@ -98,8 +103,11 @@ public class CmdInputDlg extends JDialog {
                 e.printStackTrace();
             }
             String jSpyJarPath = new File(jSpyJarUri).getPath();
-
-            env.put("JAVA_TOOL_OPTIONS", "-javaagent:\"" + jSpyJarPath + "\"" + "=" + Integer.toString(SpyServer.serverPort));
+            String agentOpts = "-javaagent:\"" + jSpyJarPath + "\"" + "=" + Integer.toString(SpyServer.serverPort);
+            env.put("JAVA_TOOL_OPTIONS", agentOpts);
+            if (isJavaWebStart(arguments.get(0))) {
+                env.put("JAVAWS_VM_ARGS", agentOpts);
+            }
 
             pb.redirectErrorStream(true);
             try {
