@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +27,7 @@ public class CmdInputDlg extends JDialog {
     private CommandComboBox commandCombo = new CommandComboBox();
     private JButton btLaunch = new JButton("Run");
     private JLabel label1 = new JLabel("Cmd to launch", JLabel.LEFT);
+    private JCheckBox injectJnlpCheck = new JCheckBox("Inject JNLP flags");
 
     public CmdInputDlg() {
         setName("execCmd");
@@ -43,6 +43,7 @@ public class CmdInputDlg extends JDialog {
         setupComboBox();
         contentPane.add(label1);
         contentPane.add(commandCombo);
+        contentPane.add(injectJnlpCheck);
         contentPane.add(btLaunch);
 
         setupListeners();
@@ -79,34 +80,51 @@ public class CmdInputDlg extends JDialog {
         commandCombo.setPreferredSize(new Dimension(200, 20));
     }
 
-    private boolean isJavaWebStart(String cmd) {
-        String name = new File(cmd).getName().toLowerCase();
-        return name.equals("javaws") || name.equals("javaws.exe");
-    }
-
     public void executeCmd() {
         String cmdStr = ((JTextComponent) (commandCombo.getEditor().getEditorComponent())).getText();
 
         if (cmdStr != null && !cmdStr.trim().equals("")) {
 
             System.out.println("Executing command :" + cmdStr);
-            List<String> arguments = new ArrayList<String>();
-            arguments.addAll(Arrays.asList(cmdStr.trim().split("\\s+")));
-            ProcessBuilder pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
-            Map<String, String> env = pb.environment();
+            List<String> arguments = parseCommand(cmdStr);
 
-            URI jSpyJarUri = null;
-            try {
-                jSpyJarUri = spyAgent.AgentPreMain.class.getProtectionDomain()
-                        .getCodeSource().getLocation().toURI();
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
+            boolean isJar = false;
+            for (String arg : arguments) {
+                if (arg.endsWith(".jar")) {
+                    isJar = true;
+                    break;
+                }
             }
-            String jSpyJarPath = new File(jSpyJarUri).getPath();
-            String agentOpts = "-javaagent:\"" + jSpyJarPath + "\"" + "=" + Integer.toString(SpyServer.serverPort);
-            env.put("JAVA_TOOL_OPTIONS", agentOpts);
-            if (isJavaWebStart(arguments.get(0))) {
-                env.put("JAVAWS_VM_ARGS", agentOpts);
+            boolean inject = isJar || injectJnlpCheck.isSelected();
+
+            ProcessBuilder pb;
+            if (inject) {
+                URI jSpyJarUri = null;
+                try {
+                    jSpyJarUri = spyAgent.AgentPreMain.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+                String jSpyJarPath = new File(jSpyJarUri).getPath();
+                String agentOpts = "-javaagent:" + jSpyJarPath + "=" + Integer.toString(SpyServer.serverPort);
+
+                if (injectJnlpCheck.isSelected()) {
+                    arguments.add(1, "-J-Djnlpx.jvmargs=" + agentOpts);
+                    arguments.add(1, "-J-Djnlpx.vmargs=" + agentOpts);
+                } else {
+                    arguments.add(1, agentOpts);
+                }
+
+                pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
+                Map<String, String> env = pb.environment();
+                addEnv(env, "JAVA_TOOL_OPTIONS", agentOpts);
+                if (injectJnlpCheck.isSelected()) {
+                    addEnv(env, "JAVAWS_VM_ARGS", agentOpts);
+                    addEnv(env, "JPI_VM_ARGS", agentOpts);
+                    addEnv(env, "JPI_PLUGIN2_VMARGS", agentOpts);
+                }
+            } else {
+                pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
             }
 
             pb.redirectErrorStream(true);
@@ -121,6 +139,38 @@ public class CmdInputDlg extends JDialog {
                 JOptionPane.showMessageDialog(this, "Could not execute command", "Error", JOptionPane.ERROR_MESSAGE);
             }
 
+        }
+    }
+
+    private static List<String> parseCommand(String cmdStr) {
+        List<String> args = new ArrayList<String>();
+        boolean inQuotes = false;
+        StringBuilder current = new StringBuilder();
+        for (int i = 0; i < cmdStr.length(); i++) {
+            char c = cmdStr.charAt(i);
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (Character.isWhitespace(c) && !inQuotes) {
+                if (current.length() > 0) {
+                    args.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+        if (current.length() > 0) {
+            args.add(current.toString());
+        }
+        return args;
+    }
+
+    private static void addEnv(Map<String, String> env, String key, String value) {
+        String existing = env.get(key);
+        if (existing != null && !existing.trim().isEmpty()) {
+            env.put(key, existing + " " + value);
+        } else {
+            env.put(key, value);
         }
     }
 
