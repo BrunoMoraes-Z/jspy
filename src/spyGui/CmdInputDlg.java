@@ -92,8 +92,7 @@ public class CmdInputDlg extends JDialog {
             System.out.println("Executing command :" + cmdStr);
             List<String> arguments = new ArrayList<String>();
             arguments.addAll(Arrays.asList(cmdStr.trim().split("\\s+")));
-            ProcessBuilder pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
-            Map<String, String> env = pb.environment();
+            boolean javaws = isJavaWebStart(arguments.get(0));
 
             URI jSpyJarUri = null;
             try {
@@ -104,8 +103,14 @@ public class CmdInputDlg extends JDialog {
             }
             String jSpyJarPath = new File(jSpyJarUri).getPath();
             String agentOpts = "-javaagent:\"" + jSpyJarPath + "\"" + "=" + Integer.toString(SpyServer.serverPort);
+            if (javaws) {
+                arguments.add(1, "-J-Djnlpx.jvmargs=" + agentOpts);
+            }
+
+            ProcessBuilder pb = new ProcessBuilder(arguments.toArray(new String[arguments.size()]));
+            Map<String, String> env = pb.environment();
             env.put("JAVA_TOOL_OPTIONS", agentOpts);
-            if (isJavaWebStart(arguments.get(0))) {
+            if (javaws) {
                 env.put("JAVAWS_VM_ARGS", agentOpts);
             }
 
