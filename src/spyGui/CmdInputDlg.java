@@ -112,6 +112,8 @@ public class CmdInputDlg extends JDialog {
             env.put("JAVA_TOOL_OPTIONS", agentOpts);
             if (javaws) {
                 env.put("JAVAWS_VM_ARGS", agentOpts);
+                env.put("JPI_VM_ARGS", agentOpts);
+                env.put("JPI_PLUGIN2_VMARGS", agentOpts);
             }
 
             pb.redirectErrorStream(true);
