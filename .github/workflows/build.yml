@@ -18,7 +18,7 @@ jobs:
       - name: Compile project
         run: |
           find src -name "*.java" > sources.txt
-          javac -d out @sources.txt
+          javac --release 8 -d out @sources.txt
           rsync -a --include '*/' --include '*.png' --exclude '*' src/ out/
           jar cfm jspy.jar src/META-INF/MANIFEST.MF -C out .
       - name: Upload build artifact

@@ -19,6 +19,22 @@ Open cloned JSpy directory in IntelliJ. Go to File\>Project Structure\>Artifact 
 To compile build the jar Artifact with attached manifest.
 ![](https://raw.githubusercontent.com/nokia/jspy/master/doc/img/build_artifacts.png "Build Artifacts")
 
+Alternatively, you can build the project using Maven:
+
+```sh
+mvn package
+```
+
+The Maven build targets Java 8 to maintain compatibility with older runtimes.
+
+If Maven cannot download the required plugins, use the provided script to build with the JDK tools directly:
+
+```sh
+./build.sh
+```
+
+This script compiles the sources targeting Java 8 and produces `target/JSpy.jar`.
+
 ## Requirements
 If you want to use JSpy with Java WebStart applications, you should create `.java.policy` file in your home directory.
 Content of the file should be:
